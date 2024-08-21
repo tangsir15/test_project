@@ -14,7 +14,7 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 
 matplotlib.use('TkAgg')
-ins='au2409'
+ins='bu2409'
 
 
 pd.set_option('display.max_columns', None)
