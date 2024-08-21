@@ -88,8 +88,7 @@ def era(x):
 
 
 
-# 创建一个新的整数索引，用于表示连续的时间点
-data['index'] = range(len(data))
+
 
 window=500
 # 计算均线
@@ -115,6 +114,8 @@ data['signal'] = (data['MA1'] > data['MA2']) & (data['MA2'] > data['MA3']) & \
 data['signal1']=(data['MA1'] > data['MA2']) & (data['MA2'] > data['MA3'])& (data['MA3'] > data['MA4'])
 data['first_signal'] = data['signal1'] & (~data['signal1'].shift(1).fillna(False))
 
+# 创建一个新的整数索引，用于表示连续的时间点
+data['index'] = range(len(data))
 # # 绘制数据
 # plt.plot(data['index'], data['LastPrice'], label='LastPrice', color='grey', alpha=0.3)
 plt.plot(data['index'], data['MA1'], label='MA1', color='black', alpha=0.3)
@@ -154,3 +155,5 @@ plt.title('Last Price Over Time with Missing Data Ignored')
 plt.legend()
 
 plt.show()
+
+
