@@ -2,10 +2,11 @@ import os
 import pandas as pd
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
+import matplotlib
 from matplotlib.ticker import MaxNLocator
 from sklearn.linear_model import LinearRegression
 import numpy as np
-
+matplotlib.use('TkAgg')
 
 ins='ag2409'
 
@@ -37,16 +38,17 @@ filtered_data_main['MA1000'] = filtered_data_main['LastPrice'].rolling(window=10
 
 
 def calculate_slope(series, window):
-    slopes = [np.nan] * window  # 初始化前window个值为NaN
+    slopes = [np.nan] * len(series)  # 初始化为全NaN
+    x = np.arange(window).reshape(-1, 1)  # 提前创建好x的值
     for i in range(window, len(series)):
-        y = series[i-window:i].values
-        x = np.arange(window).reshape(-1, 1)  # 重塑为sklearn所需的形状
-        model = LinearRegression().fit(x, y)
-        slopes.append(model.coef_[0])  # 添加斜率（系数）
+        if not np.isnan(series[i-window:i]).any():  # 确保窗口内没有NaN
+            y = series[i-window:i].values
+            model = LinearRegression().fit(x, y)
+            slopes[i] = model.coef_[0]  # 只有在没有NaN时才计算斜率
     return slopes
 
 # 使用150周期窗口计算MA300的斜率，忽略前300个值
-filtered_data_main['Slope_MA300'] = [np.nan] * 300 + calculate_slope(filtered_data_main['MA300'][300:], 150)
+filtered_data_main['Slope_MA300'] = calculate_slope(filtered_data_main['MA300'], 150)
 
 
 
@@ -96,10 +98,10 @@ plt.plot(filtered_data_main.index, filtered_data_main['LastPrice'], label='LastP
 plt.plot(filtered_data_main.index, filtered_data_main['MA300'], label='MA300', color='orange')
 plt.plot(filtered_data_main.index, filtered_data_main['MA1000'], label='MA1000', color='blue')
 plt.scatter(filtered_data_main[filtered_data_main['Turning_Point_Pos_to_Neg']].index,
-            filtered_data_main['MA300'][filtered_data_main['Turning_Point_Pos_to_Neg']],
+            filtered_data_main['LastPrice'][filtered_data_main['Turning_Point_Pos_to_Neg']],
             color='red', label='Turning Point Pos to Neg', marker='v')
 plt.scatter(filtered_data_main[filtered_data_main['Turning_Point_Neg_to_Pos']].index,
-            filtered_data_main['MA300'][filtered_data_main['Turning_Point_Neg_to_Pos']],
+            filtered_data_main['LastPrice'][filtered_data_main['Turning_Point_Neg_to_Pos']],
             color='green', label='Turning Point Neg to Pos', marker='^')
 
 plt.legend()

@@ -34,23 +34,20 @@ data.columns = column_lists[2:]
 data['TradingDay'] = data.index.get_level_values('TradingDay')
 data = data.droplevel('TradingDay')
 # data= data[['LastPrice', 'TradingDay','UpdateTime', 'UpdateMillisec']]
-filtered_data_main = data.loc[ins]
+data = data.loc[ins]
 
 
-filtered_data_main['Time'] = filtered_data_main['TradingDay'].astype(str) + '.' +filtered_data_main['UpdateTime'].astype(str).str.strip()+ '.' + filtered_data_main['UpdateMillisec'].astype(str)
+data['Time'] = data['TradingDay'].astype(str) + '.' +data['UpdateTime'].astype(str).str.strip()+ '.' + data['UpdateMillisec'].astype(str)
 
 
 
-filtered_data_main.reset_index(drop=True, inplace=True)
+data.reset_index(drop=True, inplace=True)
 time_format = '%Y%m%d.%H:%M:%S.%f'
-filtered_data_main['Timestamp'] = pd.to_datetime(filtered_data_main['Time'], format=time_format)
+data['Timestamp'] = pd.to_datetime(data['Time'], format=time_format)
 
-# import seaborn as sns
-# filtered_data_main['Timestamp'] = filtered_data_main['Timestamp'].astype(str)
-# sns.lineplot(data=filtered_data_main, x='Timestamp', y='LastPrice')
-# plt.show()
 
-data=filtered_data_main[['LastPrice','Timestamp']]
+
+data=data[['LastPrice','Timestamp']]
 
 def era(x):
     if x.LastPrice >= x.MA4:
@@ -86,7 +83,15 @@ def era(x):
             # MA4-
             return -1
 
-
+def calculate_slope(series, window):
+    slopes = [np.nan] * len(series)  # 初始化为全NaN
+    x = np.arange(window).reshape(-1, 1)  # 提前创建好x的值
+    for i in range(window, len(series)):
+        if not np.isnan(series[i-window:i]).any():  # 确保窗口内没有NaN
+            y = series[i-window:i].values
+            model = LinearRegression().fit(x, y)
+            slopes[i] = model.coef_[0]  # 只有在没有NaN时才计算斜率
+    return slopes
 
 
 
@@ -97,10 +102,23 @@ data['MA2'] = data['LastPrice'].rolling(window=window*2).mean()
 data['MA3'] = data['LastPrice'].rolling(window=window*4).mean()
 data['MA4'] = data['LastPrice'].rolling(window=window*12).mean()
 
+data['MA1_slope'] =  calculate_slope(data['MA1'] ,window*3)
+
+
 data['MA5']=data['LastPrice'].rolling(window=window*24).mean()
 data['era'] = data.apply(lambda r:era(r), axis=1)
 
+# 标记斜率由正变负的点
+data['MA1_Turning_Point_Pos_to_Neg'] = (
+    (data['MA1_slope'].shift(1) > 0) &
+    (data['MA1_slope'] < 0)
+)
 
+# 标记斜率由负变正的点
+data['MA1_Turning_Point_Neg_to_Pos'] = (
+    (data['MA1_slope'].shift(1) < 0) &
+    (data['MA1_slope'] > 0)
+)
 
 print(data['era'].value_counts())
 print(data['era'].tail(100))
@@ -140,6 +158,13 @@ data['era_down'] = data.apply(lambda row: row['LastPrice'] if row['era'] <= -3 e
 plt.plot(data['index'], data['LastPrice'], label='LastPrice', color='grey', alpha=0.3)
 plt.plot(data['index'], data['era_4_data'], color='blue', label='era4')
 plt.plot(data['index'], data['era_down'], color='red', label='era_down')
+
+plt.scatter(data['index'][data['MA1_Turning_Point_Pos_to_Neg']],
+            data['MA1'][data['MA1_Turning_Point_Pos_to_Neg']],
+            color='red', label='MA1_Turning_Point_Pos_to_Neg', marker='v')
+plt.scatter(data['index'][data['MA1_Turning_Point_Neg_to_Pos']],
+            data['MA1'][data['MA1_Turning_Point_Neg_to_Pos']],
+            color='green', label='MA1_Turning_Point_Neg_to_Pos', marker='^')
 
 # 自定义 X 轴标签的显示
 def format_func(value, tick_number):
