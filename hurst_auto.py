@@ -14,7 +14,7 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 
 matplotlib.use('TkAgg')
-ins='bu2409'
+ins='i2409'
 
 
 pd.set_option('display.max_columns', None)
@@ -44,11 +44,12 @@ data['Timestamp'] = pd.to_datetime(data['Time'], format=time_format)
 
 # 定义计算Hurst指数的函数
 def hurst_exponent(ts):
+
     H, c, data_rescaled_range = compute_Hc(ts, kind='price', simplified=True)
     return H
 
 # 设定t为过去观察的数量
-t = 2000
+t = 500
 
 # 初始化进度条
 total_windows = len(data['LastPrice']) - t + 1
@@ -66,7 +67,7 @@ data['index'] = range(len(data))
 
 plt.plot(data['index'], data['LastPrice'], label='LastPrice', color='grey', alpha=0.3)
 
-data['hurst_trend_plot'] = data.apply(lambda row: row['LastPrice'] if row['Hurst'] >=0.5 else None, axis=1)
+data['hurst_trend_plot'] = data.apply(lambda row: row['LastPrice'] if row['Hurst'] >0.5 else None, axis=1)
 data['hurst_fluctuation_plot'] = data.apply(lambda row: row['LastPrice'] if row['Hurst'] <0.5 else None, axis=1)
 
 plt.plot(data['index'], data['hurst_trend_plot'], color='blue', label='hurst_trend_plot')

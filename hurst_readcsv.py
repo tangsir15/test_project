@@ -15,7 +15,7 @@ import numpy as np
 
 matplotlib.use('TkAgg')
 
-filepath='hurst_fu2409_2000.csv'
+filepath='hurst_i2409_1000.csv'
 data=pd.read_csv(filepath)
 
 data['index'] = range(len(data))
@@ -28,11 +28,11 @@ data['Timestamp'] = pd.to_datetime(data['Time'], format=time_format)
 
 plt.plot(data['index'], data['LastPrice'], label='LastPrice', color='grey', alpha=0.3)
 
-data['hurst_trend_plot'] = data.apply(lambda row: row['LastPrice'] if row['Hurst'] >=0.5 else None, axis=1)
-data['hurst_fluctuation_plot'] = data.apply(lambda row: row['LastPrice'] if row['Hurst'] <0.46 else None, axis=1)  #fu 0.45
+data['hurst_trend_plot'] = data.apply(lambda row: row['LastPrice'] if row['Hurst'] >=0.48 else None, axis=1)
+data['hurst_fluctuation_plot'] = data.apply(lambda row: row['LastPrice'] if row['Hurst'] <0.5 else None, axis=1)  #fu 0.45
 
-# plt.plot(data['index'], data['hurst_trend_plot'], color='blue', label='hurst_trend_plot')
-plt.plot(data['index'], data['hurst_fluctuation_plot'], color='red', label='hurst_fluctuation_plot')
+plt.plot(data['index'], data['hurst_trend_plot'], color='blue', label='hurst_trend_plot')
+# plt.plot(data['index'], data['hurst_fluctuation_plot'], color='red', label='hurst_fluctuation_plot')
 
 # 自定义 X 轴标签的显示
 def format_func(value, tick_number):

@@ -9,7 +9,7 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 matplotlib.use('TkAgg')
 
-ins='ag2409'
+ins='fu2409'
 
 
 pd.set_option('display.max_columns', None)
@@ -46,15 +46,51 @@ data=filtered_data_main[['LastPrice','Timestamp']]
 
 # data.set_index('Timestamp', inplace=True)
 
-bollinger_period = 1000 #ag 400 2
-std_dev_multiplier = 3# 可以设置为动态的值
+from sklearn.linear_model import LinearRegression
 
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+
+bollinger_period = 800  # Bollinger 带的周期
+slope_period = 200  # 用于计算斜率的周期
+base_multiplier = 3.0  # 基础倍数
+
+# 计算移动平均线和标准差
 data['Middle Band'] = data['LastPrice'].rolling(window=bollinger_period).mean()
 data['Std Dev'] = data['LastPrice'].rolling(window=bollinger_period).std()
+print(data['Std Dev'].describe())
+# 计算斜率
+def calculate_slope(series):
+    if len(series) < slope_period:
+        return np.nan
+    X = np.arange(slope_period).reshape(-1, 1)  # 时间步长 (0, 1, 2, ..., 99)
+    y = series.values[-slope_period:]  # 最后 100 个值
+    model = LinearRegression()
+    model.fit(X, y)
+    return model.coef_[0]  # 返回斜率
 
-# 动态倍数，例如基于市场波动调整
-data['Upper Band'] = data['Middle Band'] + (data['Std Dev'] * std_dev_multiplier)
-data['Lower Band'] = data['Middle Band'] - (data['Std Dev'] * std_dev_multiplier)
+# 计算每个时间点的斜率
+data['Slope'] = data['Middle Band'].rolling(window=slope_period).apply(calculate_slope, raw=False)
+print(data['Slope'].describe())
+# 根据市场趋势动态调整 std_dev_multiplier
+def dynamic_multiplier(slope, base_multiplier):
+    if np.isnan(slope):
+        return base_multiplier
+    elif slope > 0.002:  # 上升趋势，增大倍数
+        return base_multiplier + 1.5
+    elif slope < -0.002:  # 下降趋势，减小倍数
+        return base_multiplier - 1.0
+    else:  # 横盘趋势，保持基础倍数
+        return base_multiplier
+
+# 应用动态倍数
+data['std_dev_multiplier'] = data['Slope'].apply(lambda x: dynamic_multiplier(x, base_multiplier))
+
+# 计算动态调整后的 Bollinger 带
+data['Upper Band'] = data['Middle Band'] + (data['Std Dev'] * data['std_dev_multiplier'])
+data['Lower Band'] = data['Middle Band'] - (data['Std Dev'] * data['std_dev_multiplier'])
+
 
 
 # # 找出超出布林线的点

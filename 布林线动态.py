@@ -9,7 +9,7 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 matplotlib.use('TkAgg')
 
-ins='ag2409'
+ins='m2409'
 
 
 pd.set_option('display.max_columns', None)
@@ -17,7 +17,15 @@ pd.set_option('display.width', 1000)
 pd.set_option('display.max_rows', None)
 
 filepath = 'marketdata20240801.csv'
-data = pd.read_csv(filepath)
+filepath1='marketdata20240802.csv'
+
+data1 = pd.read_csv(filepath)
+data2 = pd.read_csv(filepath1)
+
+
+# 合并数据集
+data = pd.concat([data1, data2])
+
 column_lists = data.columns
 data.index.names = column_lists[:2]
 data.index = data.index.set_levels([data.index.levels[0].astype(str), data.index.levels[1].str.strip()])
@@ -46,15 +54,33 @@ data=filtered_data_main[['LastPrice','Timestamp']]
 
 # data.set_index('Timestamp', inplace=True)
 
-bollinger_period = 1000 #ag 400 2
-std_dev_multiplier = 3# 可以设置为动态的值
+from sklearn.linear_model import LinearRegression
 
+import numpy as np
+
+bollinger_period = 1000  # Bollinger 带的周期
+base_multiplier = 3  # 基础倍数
+
+
+# 计算移动平均线和标准差
 data['Middle Band'] = data['LastPrice'].rolling(window=bollinger_period).mean()
 data['Std Dev'] = data['LastPrice'].rolling(window=bollinger_period).std()
+print(data['Std Dev'].describe())
+std_threshold = data['Std Dev'].quantile(0.7)   # 标准差的阈值
+# 根据标准差动态调整 base_multiplier
+def dynamic_multiplier(std, base_multiplier, std_threshold):
+    if std < std_threshold:  # 标准差较小，增大倍数
+        return base_multiplier + (std_threshold - std) / std_threshold * 4
+    else:  # 标准差较大，减小倍数
+        return base_multiplier - (std - std_threshold) / std * 1.0
 
-# 动态倍数，例如基于市场波动调整
-data['Upper Band'] = data['Middle Band'] + (data['Std Dev'] * std_dev_multiplier)
-data['Lower Band'] = data['Middle Band'] - (data['Std Dev'] * std_dev_multiplier)
+# 应用动态倍数
+data['std_dev_multiplier'] = data['Std Dev'].apply(lambda x: dynamic_multiplier(x, base_multiplier, std_threshold))
+
+# 计算动态调整后的布林带
+data['Upper Band'] = data['Middle Band'] + (data['Std Dev'] * data['std_dev_multiplier'])
+data['Lower Band'] = data['Middle Band'] - (data['Std Dev'] * data['std_dev_multiplier'])
+
 
 
 # # 找出超出布林线的点
@@ -62,7 +88,9 @@ data['Lower Band'] = data['Middle Band'] - (data['Std Dev'] * std_dev_multiplier
 data['upper_band_exceed'] = data.apply(lambda row: row['LastPrice'] if row['LastPrice'] > row['Upper Band'] else None, axis=1)
 data['lower_band_exceed'] = data.apply(lambda row: row['LastPrice'] if row['LastPrice'] < row['Lower Band'] else None, axis=1)
 
-std_dev_multiplier1=0.5
+std_dev_multiplier1=1
+
+
 # 初始化一个标志来跟踪条件
 flag = False
 
@@ -131,6 +159,8 @@ from matplotlib.ticker import FuncFormatter
 
 # 创建一个新的整数索引，用于表示连续的时间点
 data['index'] = range(len(data))
+
+
 
 # 绘制数据，使用新的索引
 plt.plot(data['index'], data['LastPrice'], label='LastPrice', color='grey', alpha=0.3)
