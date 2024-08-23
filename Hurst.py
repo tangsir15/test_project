@@ -58,9 +58,6 @@ def hurst_exponent(ts,log_t=2):
     # 储存各个子序列的重标极差
     R_S = []
 
-
-
-
     # 从长度2到N/2进行循环
     for n in range(2, N // 2 + 1):
 
@@ -124,3 +121,4 @@ hurst_values = dynamic_hurst(data['LastPrice'], t)
 # 将输出结果转为DataFrame或Series方便查看
 data['Hurst'] = hurst_values
 print(data[['LastPrice', 'Hurst']].dropna())  # 打印含Hurst指数的结果
+

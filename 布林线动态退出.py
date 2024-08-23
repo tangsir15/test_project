@@ -74,7 +74,7 @@ def dynamic_multiplier(std, base_multiplier, std_threshold,dynamic_multiple=5):
         return base_multiplier - (std - std_threshold) / std * 2.0
 
 
-def Bolllinger(data, bollinger_period, base_multiplier, std_threshold_para=0.7,quit_dev_multiplier1=1,dynamic_multiple=5):
+def Bolllinger(data, bollinger_period, base_multiplier, std_threshold_para=0.7,quit_dev_multiplier1=0.5,dynamic_multiple=5):
     '''
     计算布林线
 
@@ -106,10 +106,9 @@ def Bolllinger(data, bollinger_period, base_multiplier, std_threshold_para=0.7,q
     for i in range(len(data)):
         if pd.notna(data.at[i, 'upper_band_exceed']):
             flag = True
-        elif flag and data.at[i, 'LastPrice'] > data.at[i, 'Middle Band'] - data.at[i, 'Std Dev'] * quit_dev_multiplier1:
+        elif flag and data.at[i, 'LastPrice'] > data.at[i, 'Middle Band'] - data.at[i, 'Std Dev'] * data.at[i, 'std_dev_multiplier']* quit_dev_multiplier1:
             data.at[i, 'upper_band_exceed'] = data.at[i, 'LastPrice']
-        elif flag and data.at[i, 'LastPrice'] <= data.at[i, 'Middle Band'] - data.at[
-            i, 'Std Dev'] * quit_dev_multiplier1:
+        elif flag and data.at[i, 'LastPrice'] <= data.at[i, 'Middle Band'] - data.at[i, 'Std Dev'] * data.at[i, 'std_dev_multiplier']* quit_dev_multiplier1:
             flag = False
 
     # 初始化一个标志来跟踪条件
@@ -118,10 +117,9 @@ def Bolllinger(data, bollinger_period, base_multiplier, std_threshold_para=0.7,q
     for i in range(len(data)):
         if pd.notna(data.at[i, 'lower_band_exceed']):
             flag = True
-        elif flag and data.at[i, 'LastPrice'] < data.at[i, 'Middle Band'] + data.at[i, 'Std Dev'] * quit_dev_multiplier1:
+        elif flag and data.at[i, 'LastPrice'] < data.at[i, 'Middle Band'] + data.at[i, 'Std Dev'] * data.at[i, 'std_dev_multiplier']* quit_dev_multiplier1:
             data.at[i, 'lower_band_exceed'] = data.at[i, 'LastPrice']
-        elif flag and data.at[i, 'LastPrice'] >= data.at[i, 'Middle Band'] + data.at[
-            i, 'Std Dev'] * quit_dev_multiplier1:
+        elif flag and data.at[i, 'LastPrice'] >= data.at[i, 'Middle Band'] + data.at[i, 'Std Dev'] * data.at[i, 'std_dev_multiplier']* quit_dev_multiplier1:
             flag = False
     return data
 
@@ -174,13 +172,12 @@ if __name__ == '__main__':
     end_date = '2024-08-02'
     bollinger_params = {
         'm2409': (1000, 3, 0.7, 0.5, 5),  #(1000, 3, 0.7, 0.5, 5)
-        'y2409': (1000, 3, 0.5, 1.5, 5),  # (1000, 3, 0.5, 1.5, 5)
-        'ag2409': (1000, 3, 0.7, 1, 4),         # (1000, 3, 0.7, 1, 4)
-        'i2409': (1000, 3, 0.6, 1, 3),
+        'y2409': (1000, 3, 0.5, 0.5, 5),  # (1000, 3, 0.5, 1.5, 5)
+        'ag2409': (1000, 3, 0.7, 0.5, 4),      # (1000, 3, 0.7, 1, 4)
+        'i2409': (1000, 3, 0.6, 0.5, 3),
 
     }
-
-    contract_code = 'y2409'
+    contract_code = 'ag2409'
     plot_bollinger_for_contract(contract_code,bollinger_params)
 
 
@@ -188,5 +185,5 @@ if __name__ == '__main__':
     # ins='y2409'
     # data = read_data(start_date, end_date)
     # data = data_preprocess(data,ins)
-    # data = Bolllinger(data, 1000, 3, 0.7, 1,5)
+    # data = Bolllinger(data, 1000, 3, 0.7, 0.5,5)
     # plot_bollinger(data)

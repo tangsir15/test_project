@@ -14,9 +14,12 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 
 matplotlib.use('TkAgg')
-
-filepath='hurst_i2409_1000.csv'
+ins='m2409'
+param='2000'
+filepath=f'hurst_{ins}_{param}.csv'
 data=pd.read_csv(filepath)
+
+
 
 data['index'] = range(len(data))
 data['Time'] = data['TradingDay'].astype(str) + '.' +data['UpdateTime'].astype(str).str.strip()+ '.' + data['UpdateMillisec'].astype(str)
@@ -28,7 +31,7 @@ data['Timestamp'] = pd.to_datetime(data['Time'], format=time_format)
 
 plt.plot(data['index'], data['LastPrice'], label='LastPrice', color='grey', alpha=0.3)
 
-data['hurst_trend_plot'] = data.apply(lambda row: row['LastPrice'] if row['Hurst'] >=0.48 else None, axis=1)
+data['hurst_trend_plot'] = data.apply(lambda row: row['LastPrice'] if row['Hurst'] >=0.5 else None, axis=1)
 data['hurst_fluctuation_plot'] = data.apply(lambda row: row['LastPrice'] if row['Hurst'] <0.5 else None, axis=1)  #fu 0.45
 
 plt.plot(data['index'], data['hurst_trend_plot'], color='blue', label='hurst_trend_plot')
@@ -48,7 +51,7 @@ plt.gca().xaxis.set_major_formatter(FuncFormatter(format_func))
 
 plt.xlabel('Time')
 plt.ylabel('LastPrice')
-plt.title('Last Price Over Time with Missing Data Ignored')
+plt.title(f'hurst_{ins}_{param}')
 plt.legend()
 
 plt.show()

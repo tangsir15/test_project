@@ -54,8 +54,9 @@ matplotlib.use('TkAgg')
 # plt.show()
 
 # 读取CSV文件
-files = ['hurst_ag2409_300.csv','hurst_ag2409_500.csv', 'hurst_ag2409_1000.csv', 'hurst_ag2409_2000.csv', 'hurst_ag2409_5000.csv']
+# files = ['hurst_ag2409_300.csv','hurst_ag2409_500.csv', 'hurst_ag2409_1000.csv', 'hurst_ag2409_2000.csv', 'hurst_ag2409_5000.csv']
 # files = ['hurst_fu2409_500.csv', 'hurst_fu2409_1000.csv', 'hurst_fu2409_2000.csv', 'hurst_fu2409_4000.csv']
+files=['hurst_m2409_500.csv', 'hurst_m2409_1000.csv', 'hurst_m2409_2000.csv']
 dataframes = [pd.read_csv(file) for file in files]
 data = dataframes[0].copy()
 data['index'] = range(len(data))
@@ -73,18 +74,18 @@ for i, df in enumerate(dataframes):
 
 # 设定不同的阈值
 thresholds = {
-    '300': 0.9,
-    '500': 0.9,
-    '1000': 0.53,
-    '2000': 0.9,
-    '4000': 0.9,
-    '5000': 0.9,
+    '300': 0.0,
+    '500': 0.5,
+    '1000': 0.0,
+    '2000': 0.5,
+    '4000': 0.0,
+    '5000': 0.0,
 }
 
 # threshold = thresholds.get(i, 0.5)  # 默认阈值为0.5
 
 data['hurst_fluctuation_plot'] = data.apply(
-    lambda row: row['LastPrice'] if all(row[f'Hurst_{i}'] < thresholds.get(i, 0.5) for i in param_values) else None,
+    lambda row: row['LastPrice'] if any(row[f'Hurst_{i}'] < thresholds.get(i, 0.5) for i in param_values) else None,
     axis=1)
 
 plt.plot(data['index'], data['LastPrice'], label='LastPrice', color='grey', alpha=0.3)
