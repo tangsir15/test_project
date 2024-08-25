@@ -10,16 +10,6 @@ pd.set_option('display.width', 1000)
 pd.set_option('display.max_rows', None)
 matplotlib.use('TkAgg')
 
-ins = 'm2409'
-# 设定t为过去观察的数量
-t = 2000
-# 设置hurst阈值
-param = 0.5
-
-filepath = 'marketdata20240801.csv'
-data = pd.read_csv(filepath)
-
-
 def data_preprocess(data, ins):
     '''
     数据处理
@@ -54,6 +44,13 @@ def hurst_exponent(ts):
 
 
 def hurst_calulation(data, t, if_to_csv=False):
+    '''
+    计算Hurst指数
+    :param data:
+    :param t: 回溯周期
+    :param if_to_csv: 是否保存到csv
+    :return: 包含hurst数据的dataframe
+    '''
     total_windows = len(data['LastPrice']) - t + 1
     tqdm.pandas(desc="Calculating Hurst", total=total_windows,
                 bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}] {percentage:3.0f}%")
@@ -68,6 +65,12 @@ def hurst_calulation(data, t, if_to_csv=False):
 
 
 def plot_hurst(data, param):
+    '''
+
+    :param data:
+    :param param: 阈值
+    :return:
+    '''
     # 创建一个新的整数索引，用于表示连续的时间点
     data['index'] = range(len(data))
 
@@ -93,13 +96,20 @@ def plot_hurst(data, param):
 
     plt.xlabel('Time')
     plt.ylabel('LastPrice')
-    plt.title('Last Price Over Time with Missing Data Ignored')
+    plt.title(f'hurst_{ins}_{t}')
     plt.legend()
 
     plt.show()
 
 
 if __name__ == '__main__':
+    ins = 'm2409'
+    # 设定t为过去观察的数量
+    t = 2000
+    # 设置hurst阈值
+    param = 0.5
+    filepath = 'marketdata20240801.csv'
+    data = pd.read_csv(filepath)
     data = data_preprocess(data, ins)
-    data = hurst_calulation(data, t, if_to_csv=False)
+    data = hurst_calulation(data, t, if_to_csv=True)
     plot_hurst(data, param)

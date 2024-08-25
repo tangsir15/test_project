@@ -10,7 +10,7 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 matplotlib.use('TkAgg')
 
-ins='i2409'
+ins='y2409'
 
 
 pd.set_option('display.max_columns', None)
@@ -52,45 +52,138 @@ filtered_data_main['Timestamp'] = pd.to_datetime(filtered_data_main['Time'], for
 
 data=filtered_data_main[['LastPrice','Timestamp']]
 
+# def era(x):
+#     if x.LastPrice >= x.MA4:
+#         # 上涨
+#         if x.LastPrice >= x.MA3 and x.MA3 >= x.MA4:
+#             if x.LastPrice >= x.MA2 and x.MA2 >= x.MA3:
+#                 if x.LastPrice >= x.MA1 and x.MA1 >= x.MA2:
+#                     # MA1+
+#                     return 4
+#                 else:
+#                     # MA2+
+#                     return 3
+#             else:
+#                 # MA3+
+#                 return 2
+#         else:
+#             # MA4+
+#             return 1
+#     else:
+#         # 下跌
+#         if x.LastPrice <= x.MA3 and x.MA3 <= x.MA4:
+#             if x.LastPrice <= x.MA2 and x.MA2 <= x.MA3:
+#                 if x.LastPrice <= x.MA1 and x.MA1 <= x.MA2:
+#                     # MA1-
+#                     return -4
+#                 else:
+#                     # MA2-
+#                     return -3
+#             else:
+#                 # MA3-
+#                 return -2
+#         else:
+#             # MA4-
+#             return -1
+
+# def era(x):
+#     if x.LastPrice >= x.MA4:
+#         # 上涨
+#         if x.LastPrice >= x.MA3 and x.MA3 >= x.MA4:
+#             if x.LastPrice >= x.MA2 and x.MA2 >= x.MA3:
+#                 if x.LastPrice >= x.MA1 and x.MA1 >= x.MA2:
+#                     # 完全多头排列
+#                     return 4.0
+#                 else:
+#                     # MA2+ 只有MA1不在正确位置，接近完全多头排列
+#                     return 3.75
+#             else:
+#                 if x.LastPrice >= x.MA1 and x.MA1 >= x.MA4:
+#                     # MA3+ 只有MA2不在正确位置
+#                     return 3.5
+#                 else:
+#                     # MA4+ 只有MA3不在正确位置
+#                     return 3.25
+#         else:
+#             if x.LastPrice >= x.MA1 and x.MA1 >= x.MA2:
+#                 if x.MA2 >= x.MA4:
+#                     # MA1+，MA4-
+#                     return 3.0
+#                 else:
+#                     # MA4+，MA3-，仅次于MA4+
+#                     return 2.75
+#             else:
+#                 # MA4+ 当前价大于所有均线，但均线顺序较乱
+#                 return 2.5
+#     else:
+#         # 下跌
+#         if x.LastPrice <= x.MA3 and x.MA3 <= x.MA4:
+#             if x.LastPrice <= x.MA2 and x.MA2 <= x.MA3:
+#                 if x.LastPrice <= x.MA1 and x.MA1 <= x.MA2:
+#                     # 完全空头排列
+#                     return -4.0
+#                 else:
+#                     # MA2- 只有MA1不在正确位置，接近完全空头排列
+#                     return -3.75
+#             else:
+#                 if x.LastPrice <= x.MA1 and x.MA1 <= x.MA4:
+#                     # MA3- 只有MA2不在正确位置
+#                     return -3.5
+#                 else:
+#                     # MA4- 只有MA3不在正确位置
+#                     return -3.25
+#         else:
+#             if x.LastPrice <= x.MA1 and x.MA1 <= x.MA2:
+#                 if x.MA2 <= x.MA4:
+#                     # MA1-，MA4+
+#                     return -3.0
+#                 else:
+#                     # MA4-，MA3+，仅次于MA4-
+#                     return -2.75
+#             else:
+#                 # MA4- 当前价小于所有均线，但均线顺序较乱
+#                 return -2.5
+#
+
 def era(x):
     if x.LastPrice >= x.MA4:
         # 上涨
         if x.LastPrice >= x.MA3 and x.MA3 >= x.MA4:
             if x.LastPrice >= x.MA2 and x.MA2 >= x.MA3:
                 if x.LastPrice >= x.MA1 and x.MA1 >= x.MA2:
-                    # MA1+
-                    return 4
+                    return 4.0  # 强烈上涨趋势 (完全多头排列)
                 else:
-                    # MA2+
-                    return 3
+                    return 3.75  # 接近强烈上涨趋势
             else:
-                # MA3+
-                return 2
+                if x.LastPrice >= x.MA1 and x.MA1 >= x.MA4:
+                    return 3.5  # 中等强度上涨趋势
+                else:
+                    return 3.25  # 中等上涨趋势
         else:
-            # MA4+
-            return 1
+            if x.LastPrice >= x.MA2 and x.MA2 >= x.MA3:
+                return 2.5  # 弱上涨趋势
+            else:
+                return 2.0  # 非常弱的上涨趋势
     else:
         # 下跌
         if x.LastPrice <= x.MA3 and x.MA3 <= x.MA4:
             if x.LastPrice <= x.MA2 and x.MA2 <= x.MA3:
                 if x.LastPrice <= x.MA1 and x.MA1 <= x.MA2:
-                    # MA1-
-                    return -4
+                    return -4.0  # 强烈下跌趋势 (完全空头排列)
                 else:
-                    # MA2-
-                    return -3
+                    return -3.75  # 接近强烈下跌趋势
             else:
-                # MA3-
-                return -2
+                if x.LastPrice <= x.MA1 and x.MA1 <= x.MA4:
+                    return -3.5  # 中等强度下跌趋势
+                else:
+                    return -3.25  # 中等下跌趋势
         else:
-            # MA4-
-            return -1
+            if x.LastPrice <= x.MA2 and x.MA2 <= x.MA3:
+                return -2.5  # 弱下跌趋势
+            else:
+                return -2.0  # 非常弱的下跌趋势
 
-
-
-
-
-window=500
+window=800
 # 计算均线
 data['MA1'] = data['LastPrice'].rolling(window=window).mean()
 data['MA2'] = data['LastPrice'].rolling(window=window*2).mean()
@@ -100,7 +193,7 @@ data['MA4'] = data['LastPrice'].rolling(window=window*12).mean()
 data['MA5']=data['LastPrice'].rolling(window=window*24).mean()
 data['era'] = data.apply(lambda r:era(r), axis=1)
 
-
+# data.to_csv(f'{ins}_era.csv')
 
 print(data['era'].value_counts())
 print(data['era'].tail(100))
@@ -135,8 +228,8 @@ plt.plot(data['index'], data['MA5'], label='MA5', color='yellow', alpha=0.3)
 # plt.plot(data['index'][data['era'] == 4], data['LastPrice'][data['era'] == 4], color='red', label='era4')
 
 
-data['era_4_data'] = data.apply(lambda row: row['LastPrice'] if row['era'] >= 3 else None, axis=1)
-data['era_down'] = data.apply(lambda row: row['LastPrice'] if row['era'] <= -3 else None, axis=1)
+data['era_4_data'] = data.apply(lambda row: row['LastPrice'] if row['era'] >= 0 else None, axis=1)
+data['era_down'] = data.apply(lambda row: row['LastPrice'] if row['era'] <= 0 else None, axis=1)
 plt.plot(data['index'], data['LastPrice'], label='LastPrice', color='grey', alpha=0.3)
 plt.plot(data['index'], data['era_4_data'], color='blue', label='era4')
 plt.plot(data['index'], data['era_down'], color='red', label='era_down')

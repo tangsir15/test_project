@@ -76,9 +76,14 @@ def dynamic_multiplier(std, base_multiplier, std_threshold,dynamic_multiple=5):
 
 def Bolllinger(data, bollinger_period, base_multiplier, std_threshold_para=0.7,quit_dev_multiplier1=1,dynamic_multiple=5):
     '''
-    计算布林线
 
-    :param data: 输入数据
+    :param data:
+    :param bollinger_period:
+    :param base_multiplier: 基础倍数
+    :param std_threshold_para: 标准差阈值参数
+    :param quit_dev_multiplier1: 退出倍数参数
+    :param dynamic_multiple: 动态调整参数
+    :return:
     '''
     # 计算移动平均线和标准差
     data['Middle Band'] = data['LastPrice'].rolling(window=bollinger_period).mean()
@@ -175,14 +180,12 @@ if __name__ == '__main__':
     bollinger_params = {
         'm2409': (1000, 3, 0.7, 0.5, 5),  #(1000, 3, 0.7, 0.5, 5)
         'y2409': (1000, 3, 0.5, 1.5, 5),  # (1000, 3, 0.5, 1.5, 5)
-        'ag2409': (1000, 3, 0.7, 1, 4),         # (1000, 3, 0.7, 1, 4)
-        'i2409': (1000, 3, 0.6, 1, 3),
-
+        # 'ag2409': (1000, 3, 0.7, 1, 4),
+        # 'i2409': (1000, 3, 0.6, 1, 3),
     }
 
-    contract_code = 'y2409'
+    contract_code = 'm2409'
     plot_bollinger_for_contract(contract_code,bollinger_params)
-
 
     # #手动调参
     # ins='y2409'

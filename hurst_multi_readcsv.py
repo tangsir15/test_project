@@ -56,7 +56,8 @@ matplotlib.use('TkAgg')
 # 读取CSV文件
 # files = ['hurst_ag2409_300.csv','hurst_ag2409_500.csv', 'hurst_ag2409_1000.csv', 'hurst_ag2409_2000.csv', 'hurst_ag2409_5000.csv']
 # files = ['hurst_fu2409_500.csv', 'hurst_fu2409_1000.csv', 'hurst_fu2409_2000.csv', 'hurst_fu2409_4000.csv']
-files=['hurst_m2409_500.csv', 'hurst_m2409_1000.csv', 'hurst_m2409_2000.csv']
+# files=['hurst_m2409_500.csv', 'hurst_m2409_1000.csv', 'hurst_m2409_2000.csv', 'hurst_m2409_4000.csv']
+files=['hurst_i2409_500.csv', 'hurst_i2409_1000.csv', 'hurst_i2409_2000.csv', ]
 dataframes = [pd.read_csv(file) for file in files]
 data = dataframes[0].copy()
 data['index'] = range(len(data))
@@ -74,12 +75,12 @@ for i, df in enumerate(dataframes):
 
 # 设定不同的阈值
 thresholds = {
-    '300': 0.0,
-    '500': 0.5,
-    '1000': 0.0,
-    '2000': 0.5,
-    '4000': 0.0,
-    '5000': 0.0,
+    '300': 0.9,
+    '500': 0.9,
+    '1000': 0.51,
+    '2000': 0.51,
+    '4000': 0.9,
+    '5000': 0.9,
 }
 
 # threshold = thresholds.get(i, 0.5)  # 默认阈值为0.5
@@ -87,9 +88,15 @@ thresholds = {
 data['hurst_fluctuation_plot'] = data.apply(
     lambda row: row['LastPrice'] if any(row[f'Hurst_{i}'] < thresholds.get(i, 0.5) for i in param_values) else None,
     axis=1)
-
+data['hurst_trend_plot'] = data.apply(
+    lambda row: row['LastPrice'] if any(row[f'Hurst_{i}'] >= thresholds.get(i, 0.5) for i in param_values) else None,
+    axis=1)
 plt.plot(data['index'], data['LastPrice'], label='LastPrice', color='grey', alpha=0.3)
-plt.plot(data['index'], data['hurst_fluctuation_plot'], color='red', label='hurst_fluctuation_plot')
+# plt.plot(data['index'], data['hurst_fluctuation_plot'], color='red', label='hurst_fluctuation_plot')
+plt.plot(data['index'], data['hurst_trend_plot'], color='blue', label='hurst_trend_plot')
+
+
+
 
 
 # 自定义 X 轴标签的显示
@@ -107,7 +114,7 @@ plt.gca().xaxis.set_major_formatter(FuncFormatter(format_func))
 
 plt.xlabel('Time')
 plt.ylabel('LastPrice')
-plt.title('Last Price Over Time with Missing Data Ignored')
+plt.title('hurst_m2409_500_1000_2000')
 plt.legend()
 
 plt.show()

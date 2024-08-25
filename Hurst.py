@@ -32,9 +32,6 @@ data = data.loc[ins]
 
 
 data['Time'] = data['TradingDay'].astype(str) + '.' +data['UpdateTime'].astype(str).str.strip()+ '.' + data['UpdateMillisec'].astype(str)
-
-
-
 data.reset_index(drop=True, inplace=True)
 time_format = '%Y%m%d.%H:%M:%S.%f'
 data['Timestamp'] = pd.to_datetime(data['Time'], format=time_format)
